@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="#2196F3"/>
+
+  <!-- UAV/Drone icon -->
+  <g fill="#FFFFFF">
+    <!-- Main body -->
+    <ellipse cx="32" cy="32" rx="8" ry="4"/>
+
+    <!-- Propeller arms -->
+    <rect x="14" y="30" width="8" height="2" rx="1"/>
+    <rect x="42" y="30" width="8" height="2" rx="1"/>
+    <rect x="30" y="14" width="2" height="8" ry="1"/>
+    <rect x="30" y="42" width="2" height="8" ry="1"/>
+
+    <!-- Propellers -->
+    <circle cx="18" cy="18" r="4" opacity="0.7"/>
+    <circle cx="46" cy="18" r="4" opacity="0.7"/>
+    <circle cx="18" cy="46" r="4" opacity="0.7"/>
+    <circle cx="46" cy="46" r="4" opacity="0.7"/>
+
+    <!-- Path line -->
+    <path d="M 10 54 Q 20 48, 32 48 T 54 54" stroke="#00E676" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

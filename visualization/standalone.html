@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="../">
+    <title>UAV 3D Path Planner - Interactive Demo | 无人机三维路径规划</title>
+    <meta name="description" content="Interactive 3D UAV path planning with A* algorithm and Cesium visualization">
+    <meta name="keywords" content="UAV, drone, path planning, A*, 3D, Cesium, flight planning">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+    <!-- Cesium CSS -->
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.134/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #000;
+            overflow: hidden;
+        }
+
+        #cesiumContainer {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* Language Toggle */
+        .lang-toggle {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 6px;
+            display: flex;
+            gap: 4px;
+            z-index: 1001;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .lang-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            background: transparent;
+            color: #6e6e73;
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            background: #007aff;
+            color: white;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            width: 360px;
+            max-height: 85vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            padding: 24px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .panel-header {
+            font-size: 26px;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-subtitle {
+            font-size: 13px;
+            color: #86868b;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6e6e73;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #6e6e73;
+            margin-bottom: 6px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #d2d2d7;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #f5f5f7;
+            transition: all 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #007aff;
+            background: #fff;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #34C759 0%, #30B14E 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(52, 199, 89, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(0, 0, 0, 0.05);
+            color: #1d1d1f;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .stats {
+            background: rgba(52, 199, 89, 0.08);
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #6e6e73;
+        }
+
+        .stat-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #34C759;
+        }
+
+        .help-text {
+            font-size: 13px;
+            color: #6e6e73;
+            line-height: 1.6;
+            background: rgba(0, 122, 255, 0.08);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .help-text ol {
+            padding-left: 20px;
+            margin: 8px 0;
+        }
+
+        .help-text li {
+            margin: 6px 0;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .zoom-controls {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .zoom-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            font-size: 24px;
+            font-weight: 300;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s;
+        }
+
+        .zoom-btn:hover {
+            background: #fff;
+            transform: scale(1.05);
+        }
+
+        .camera-controls {
+            position: absolute;
+            bottom: 30px;  /* Following big project: bottom-left corner */
+            left: 20px;
+            display: none;
+            flex-direction: row;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .camera-controls.show {
+            display: flex;
+        }
+
+        .camera-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 2px solid transparent;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .camera-btn:hover {
+            background: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .camera-btn.active {
+            background: #007aff;
+            color: white;
+            border-color: #007aff;
+        }
+
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* GitHub Corner */
+        .github-corner {
+            position: absolute;
+            top: 0;
+            right: 0;
+            z-index: 1001;
+        }
+
+        .github-corner svg {
+            fill: #fff;
+            color: #000;
+            width: 80px;
+            height: 80px;
+        }
+
+        @media (max-width: 768px) {
+            .control-panel {
+                width: 90%;
+                max-width: 360px;
+                right: 5%;
+                top: 70px;
+            }
+
+            .lang-toggle {
+                top: 10px;
+            }
+
+            .zoom-controls {
+                top: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- GitHub Corner -->
+    <a href="https://github.com/Zguoxu/AeroMind" class="github-corner" target="_blank" aria-label="View source on GitHub">
+        <svg viewBox="0 0 250 250" aria-hidden="true">
+            <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+            <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+            <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+        </svg>
+    </a>
+
+    <!-- Language Toggle -->
+    <div class="lang-toggle">
+        <button class="lang-btn active" onclick="setLanguage('en')" id="btn-en">English</button>
+        <button class="lang-btn" onclick="setLanguage('zh')" id="btn-zh">中文</button>
+    </div>
+
+    <!-- Cesium Container -->
+    <div id="cesiumContainer"></div>
+
+    <!-- Zoom Controls -->
+    <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoomIn()" title="Zoom In / 放大">+</button>
+        <button class="zoom-btn" onclick="zoomOut()" title="Zoom Out / 缩小">−</button>
+    </div>
+
+    <!-- Camera Mode Controls (shown during flight) -->
+    <div class="camera-controls" id="cameraControls">
+        <button class="camera-btn active" id="btn-camera-follow" onclick="setCameraMode('follow')">
+            <span id="label-camera-follow">📹 Follow</span>
+        </button>
+        <button class="camera-btn" id="btn-camera-overview" onclick="setCameraMode('overview')">
+            <span id="label-camera-overview">🌍 Overview</span>
+        </button>
+        <button class="camera-btn" id="btn-camera-free" onclick="setCameraMode('free')">
+            <span id="label-camera-free">🖱️ Free</span>
+        </button>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="control-panel">
+        <div class="panel-header">
+            <span id="title">🚁 UAV Path Planner</span>
+        </div>
+        <div class="panel-subtitle" id="subtitle">
+            3D A* Algorithm with No-Fly Zone Avoidance
+        </div>
+
+        <!-- Instructions -->
+        <div class="section">
+            <div class="help-text" id="instructions">
+                <strong>📖 Instructions:</strong>
+                <ol>
+                    <li>Click on the map to set start point</li>
+                    <li>Click again to set end point</li>
+                    <li>Click "Plan Path" button</li>
+                    <li>Click "Start Flight" to see animation</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Points -->
+        <div class="section">
+            <div class="section-title" id="label-waypoints">📍 Waypoints</div>
+            <div class="input-group">
+                <label id="label-start">Start Point</label>
+                <input type="text" id="startPoint" class="input-field" placeholder="Click map to select" readonly>
+            </div>
+            <div class="input-group">
+                <label id="label-end">End Point</label>
+                <input type="text" id="endPoint" class="input-field" placeholder="Click map to select" readonly>
+            </div>
+        </div>
+
+        <!-- Parameters -->
+        <div class="section">
+            <div class="section-title" id="label-params">⚙️ Parameters</div>
+            <div class="input-group">
+                <label id="label-altitude">Cruise Altitude: <span id="altitudeValue">120</span>m</label>
+                <input type="range" id="altitude" min="50" max="300" value="120" step="10"
+                       style="width: 100%;" oninput="document.getElementById('altitudeValue').textContent = this.value">
+            </div>
+        </div>
+
+        <!-- No-Fly Zones -->
+        <div class="section">
+            <div class="section-title" id="label-noflyzone">🚫 No-Fly Zones</div>
+            <div class="input-group">
+                <button class="btn btn-secondary" onclick="startAddingNoFlyZone()" style="width: 100%;">
+                    <span id="btn-add-zone">➕ Add Zone (Click Map)</span>
+                </button>
+            </div>
+            <div id="noFlyZonesList" style="max-height: 200px; overflow-y: auto; margin-top: 10px;">
+                <!-- No-fly zones will be listed here -->
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="section">
+            <button id="planBtn" class="btn btn-primary" onclick="planPath()" disabled>
+                <span id="btn-plan">🛤️ Plan Path</span>
+            </button>
+            <button id="flyBtn" class="btn btn-primary" onclick="startFlight()" disabled>
+                <span id="btn-fly">✈️ Start Flight</span>
+            </button>
+            <button class="btn btn-secondary" onclick="clearAll()">
+                <span id="btn-clear">🗑️ Clear All</span>
+            </button>
+        </div>
+
+        <!-- Statistics -->
+        <div class="section" id="statsSection" style="display: none;">
+            <div class="section-title" id="label-stats">📊 Statistics</div>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label" id="stat-distance-label">Distance</span>
+                    <span class="stat-value" id="statDistance">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" id="stat-waypoints-label">Waypoints</span>
+                    <span class="stat-value" id="statWaypoints">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" id="stat-time-label">Duration</span>
+                    <span class="stat-value" id="statTime">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" id="stat-altitude-label">Max Altitude</span>
+                    <span class="stat-value" id="statAltitude">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Cesium JS -->
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.134/Build/Cesium/Cesium.js"></script>
+
+    <!-- A* Algorithm -->
+    <script src="src/AStar3DPathPlanner.js"></script>
+
+    <!-- i18n Translations -->
+    <script>
+        const i18n = {
+            en: {
+                title: '🚁 UAV Path Planner',
+                subtitle: '3D A* Algorithm with No-Fly Zone Avoidance',
+                instructions: '<strong>📖 Instructions:</strong><ol><li>Click on the map to set start point</li><li>Click again to set end point</li><li>Click "Plan Path" button</li><li>Click "Start Flight" to see animation</li></ol>',
+                labelWaypoints: '📍 Waypoints',
+                labelStart: 'Start Point',
+                labelEnd: 'End Point',
+                labelParams: '⚙️ Parameters',
+                labelAltitude: 'Cruise Altitude',
+                btnPlan: '🛤️ Plan Path',
+                btnFly: '✈️ Start Flight',
+                btnClear: '🗑️ Clear All',
+                labelStats: '📊 Statistics',
+                statDistance: 'Distance',
+                statWaypoints: 'Waypoints',
+                statTime: 'Duration',
+                statAltitude: 'Max Altitude',
+                placeholderStart: 'Click map to select start',
+                placeholderEnd: 'Click map to select end',
+                toastMapLoaded: '✅ Map loaded, start planning!',
+                toastStartSet: '✅ Start point set',
+                toastEndSet: '✅ End point set',
+                toastPlanning: 'Planning path...',
+                toastSuccess: '✅ Path planning successful!',
+                toastFailed: '❌ Path planning failed',
+                toastCleared: '🗑️ All markers cleared',
+                toastFlightStart: '🚁 Flight started!',
+                labelNoFlyZone: '🚫 No-Fly Zones',
+                btnAddZone: '➕ Add Zone (Click Map)',
+                btnDelete: '🗑️ Delete',
+                toastClickCorner2: 'Click again to set the second corner',
+                toastClickCorner1: 'Click on the map to set the first corner of the no-fly zone',
+                btnCancelZone: '❌ Cancel Adding Zone',
+                promptZoneName: 'Enter no-fly zone name:',
+                promptMinAlt: 'Enter minimum altitude (meters):',
+                promptMaxAlt: 'Enter maximum altitude (meters):',
+                toastInvalidAlt: 'Invalid altitude values',
+                toastZoneAdded: 'No-fly zone added successfully',
+                confirmDeleteZone: 'Delete no-fly zone',
+                toastZoneDeleted: 'No-fly zone deleted',
+                noZonesDefined: 'No zones defined',
+                zoneShenyangAirport: 'Shenyang Airport',
+                zoneCityCenter: 'City Center Restricted Area',
+                cameraFollow: '📹 Follow',
+                cameraOverview: '🌍 Overview',
+                cameraFree: '🖱️ Free'
+            },
+            zh: {
+                title: '🚁 无人机路径规划',
+                subtitle: '基于A*算法的3D路径规划与禁飞区规避',
+                instructions: '<strong>📖 使用说明：</strong><ol><li>在地图上点击选择起点</li><li>再次点击选择终点</li><li>点击"规划路径"按钮</li><li>点击"开始飞行"查看动画</li></ol>',
+                labelWaypoints: '📍 航点设置',
+                labelStart: '起点',
+                labelEnd: '终点',
+                labelParams: '⚙️ 飞行参数',
+                labelAltitude: '巡航高度',
+                btnPlan: '🛤️ 规划路径',
+                btnFly: '✈️ 开始飞行',
+                btnClear: '🗑️ 清除所有',
+                labelStats: '📊 飞行统计',
+                statDistance: '总距离',
+                statWaypoints: '航点数',
+                statTime: '预计时长',
+                statAltitude: '最高高度',
+                placeholderStart: '点击地图选择起点',
+                placeholderEnd: '点击地图选择终点',
+                toastMapLoaded: '✅ 地图加载完成，开始规划吧！',
+                toastStartSet: '✅ 起点已设置',
+                toastEndSet: '✅ 终点已设置',
+                toastPlanning: '正在规划路径...',
+                toastSuccess: '✅ 路径规划成功！',
+                toastFailed: '❌ 路径规划失败',
+                toastCleared: '🗑️ 已清除所有标记',
+                toastFlightStart: '🚁 飞行开始！',
+                labelNoFlyZone: '🚫 禁飞区设置',
+                btnAddZone: '➕ 添加禁飞区（点击地图）',
+                btnDelete: '🗑️ 删除',
+                toastClickCorner2: '再次点击以设置第二个角点',
+                toastClickCorner1: '点击地图以设置禁飞区的第一个角点',
+                btnCancelZone: '❌ 取消添加禁飞区',
+                promptZoneName: '输入禁飞区名称：',
+                promptMinAlt: '输入最低高度（米）：',
+                promptMaxAlt: '输入最高高度（米）：',
+                toastInvalidAlt: '高度值无效',
+                toastZoneAdded: '禁飞区添加成功',
+                confirmDeleteZone: '删除禁飞区',
+                toastZoneDeleted: '禁飞区已删除',
+                noZonesDefined: '暂无禁飞区',
+                zoneShenyangAirport: '沈阳机场',
+                zoneCityCenter: '市中心限飞区',
+                cameraFollow: '📹 跟随视角',
+                cameraOverview: '🌍 俯瞰视角',
+                cameraFree: '🖱️ 自由视角'
+            }
+        };
+
+        let currentLang = 'en';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+            document.getElementById('btn-zh').classList.toggle('active', lang === 'zh');
+
+            const t = i18n[lang];
+            document.getElementById('title').textContent = t.title;
+            document.getElementById('subtitle').textContent = t.subtitle;
+            document.getElementById('instructions').innerHTML = t.instructions;
+            document.getElementById('label-waypoints').textContent = t.labelWaypoints;
+            document.getElementById('label-start').textContent = t.labelStart;
+            document.getElementById('label-end').textContent = t.labelEnd;
+            document.getElementById('label-params').textContent = t.labelParams;
+            document.getElementById('label-altitude').innerHTML = t.labelAltitude + ': <span id="altitudeValue">120</span>m';
+            document.getElementById('btn-plan').textContent = t.btnPlan;
+            document.getElementById('btn-fly').textContent = t.btnFly;
+            document.getElementById('btn-clear').textContent = t.btnClear;
+            document.getElementById('label-stats').textContent = t.labelStats;
+            document.getElementById('stat-distance-label').textContent = t.statDistance;
+            document.getElementById('stat-waypoints-label').textContent = t.statWaypoints;
+            document.getElementById('stat-time-label').textContent = t.statTime;
+            document.getElementById('stat-altitude-label').textContent = t.statAltitude;
+            document.getElementById('startPoint').placeholder = t.placeholderStart;
+            document.getElementById('endPoint').placeholder = t.placeholderEnd;
+            document.getElementById('label-noflyzone').textContent = t.labelNoFlyZone;
+            document.getElementById('btn-add-zone').textContent = t.btnAddZone;
+            document.getElementById('label-camera-follow').textContent = t.cameraFollow;
+            document.getElementById('label-camera-overview').textContent = t.cameraOverview;
+            document.getElementById('label-camera-free').textContent = t.cameraFree;
+
+            // Update no-fly zones list to reflect language change
+            updateNoFlyZonesList();
+        }
+
+        function t(key) {
+            return i18n[currentLang][key];
+        }
+    </script>
+
+    <!-- Main Application (Same as before, with translation support) -->
+    <script>
+        let viewer, startPoint = null, endPoint = null, flightPath = null;
+        let startMarker = null, endMarker = null, pathEntity = null, droneEntity = null;
+        let pathVerticalLines = [];  // Track vertical line entities for 3D visualization
+        let userNoFlyZones = [];
+        let noFlyZoneEntities = [];
+        let addingNoFlyZone = false;
+        let tempNoFlyZoneCorner1 = null;
+
+        // Demo no-fly zones (can be loaded as examples)
+        const demoNoFlyZones = [
+            { nameKey: 'zoneShenyangAirport', type: 'restricted', south_lat: 41.630, north_lat: 41.650, west_lng: 123.470, east_lng: 123.500, min_altitude: 0, max_altitude: 500 },
+            { nameKey: 'zoneCityCenter', type: 'restricted', south_lat: 41.788, north_lat: 41.808, west_lng: 123.420, east_lng: 123.450, min_altitude: 0, max_altitude: 200 }
+        ];
+
+        // Initialize with demo zones
+        userNoFlyZones = [...demoNoFlyZones];
+
+        async function initCesium() {
+            // Set Cesium Ion access token
+            Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyNTNkYzgwYy1kY2YwLTQ4OWQtOGI3NS0xNzkzMmUxMWI5NWIiLCJpZCI6MzUxNzU1LCJpYXQiOjE3NjA3OTAyMDN9.vLz2gnlP-KovK-5KqUDAupuHvSkzJPI0Qz2mY9S2QrM';
+
+            // Create viewer with Cesium Ion imagery
+            viewer = new Cesium.Viewer('cesiumContainer', {
+                baseLayerPicker: false,
+                animation: false,
+                fullscreenButton: false,
+                vrButton: false,
+                geocoder: false,
+                homeButton: false,
+                infoBox: false,
+                sceneModePicker: false,
+                selectionIndicator: false,
+                timeline: false,
+                navigationHelpButton: false,
+                scene3DOnly: true,
+                shouldAnimate: true
+            });
+
+            viewer.cesiumWidget.creditContainer.style.display = 'none';
+
+            // Center view on no-fly zones area (between airport and city center)
+            viewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromDegrees(123.460, 41.710, 15000),
+                orientation: {
+                    heading: Cesium.Math.toRadians(0),
+                    pitch: Cesium.Math.toRadians(-60),  // Look down more steeply
+                    roll: 0
+                }
+            });
+
+            renderNoFlyZones();
+
+            const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+            handler.setInputAction((click) => {
+                const cartesian = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
+                if (cartesian) handleMapClick(cartesian);
+            }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+            showToast(t('toastMapLoaded'));
+        }
+
+        function renderNoFlyZones() {
+            // Clear existing zone entities
+            noFlyZoneEntities.forEach(entity => viewer.entities.remove(entity));
+            noFlyZoneEntities = [];
+
+            // Render all user-defined zones
+            userNoFlyZones.forEach((zone, index) => {
+                const rectangle = Cesium.Rectangle.fromDegrees(zone.west_lng, zone.south_lat, zone.east_lng, zone.north_lat);
+                const zoneName = zone.nameKey ? t(zone.nameKey) : zone.name;
+                const entity = viewer.entities.add({
+                    name: zoneName,
+                    rectangle: {
+                        coordinates: rectangle, height: zone.min_altitude, extrudedHeight: zone.max_altitude,
+                        material: Cesium.Color.RED.withAlpha(0.3), outline: true,
+                        outlineColor: Cesium.Color.RED.withAlpha(0.8), outlineWidth: 2
+                    }
+                });
+                noFlyZoneEntities.push(entity);
+            });
+
+            updateNoFlyZonesList();
+        }
+
+        function updateNoFlyZonesList() {
+            const list = document.getElementById('noFlyZonesList');
+            if (userNoFlyZones.length === 0) {
+                list.innerHTML = `<div style="padding: 10px; text-align: center; color: #666; font-size: 13px;">${t('noZonesDefined')}</div>`;
+                return;
+            }
+
+            list.innerHTML = userNoFlyZones.map((zone, index) => {
+                const zoneName = zone.nameKey ? t(zone.nameKey) : zone.name;
+                return `
+                <div style="background: #f5f5f5; padding: 8px; margin-bottom: 5px; border-radius: 4px; font-size: 13px;">
+                    <div style="font-weight: bold; margin-bottom: 4px;">${zoneName}</div>
+                    <div style="color: #666; font-size: 11px;">
+                        Lat: ${zone.south_lat.toFixed(3)}° - ${zone.north_lat.toFixed(3)}°<br>
+                        Lng: ${zone.west_lng.toFixed(3)}° - ${zone.east_lng.toFixed(3)}°<br>
+                        Alt: ${zone.min_altitude}m - ${zone.max_altitude}m
+                    </div>
+                    <button onclick="deleteNoFlyZone(${index})" style="margin-top: 5px; padding: 3px 8px; background: #ff4444; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">
+                        ${t('btnDelete')}
+                    </button>
+                </div>
+            `}).join('');
+        }
+
+        function handleMapClick(cartesian) {
+            const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+            const lon = Cesium.Math.toDegrees(cartographic.longitude);
+            const lat = Cesium.Math.toDegrees(cartographic.latitude);
+
+            // If adding no-fly zone mode
+            if (addingNoFlyZone) {
+                if (!tempNoFlyZoneCorner1) {
+                    // First click - set corner 1
+                    tempNoFlyZoneCorner1 = { lat, lon };
+                    showToast(t('toastClickCorner2'));
+                } else {
+                    // Second click - complete the zone
+                    const corner2 = { lat, lon };
+                    promptForNoFlyZoneDetails(tempNoFlyZoneCorner1, corner2);
+                    tempNoFlyZoneCorner1 = null;
+                    addingNoFlyZone = false;
+                    document.getElementById('btn-add-zone').innerHTML = t('btnAddZone');
+                }
+                return;
+            }
+
+            // Normal mode - set start/end points
+            if (!startPoint) {
+                startPoint = { lon, lat };
+                document.getElementById('startPoint').value = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+                addMarker(cartesian, Cesium.Color.GREEN, 'start');
+                showToast(t('toastStartSet'));
+                updateButtons();
+            } else if (!endPoint) {
+                endPoint = { lon, lat };
+                document.getElementById('endPoint').value = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+                addMarker(cartesian, Cesium.Color.RED, 'end');
+                showToast(t('toastEndSet'));
+                updateButtons();
+            }
+        }
+
+        function startAddingNoFlyZone() {
+            addingNoFlyZone = !addingNoFlyZone;
+            if (addingNoFlyZone) {
+                document.getElementById('btn-add-zone').innerHTML = t('btnCancelZone');
+                showToast(t('toastClickCorner1'));
+                tempNoFlyZoneCorner1 = null;
+            } else {
+                document.getElementById('btn-add-zone').innerHTML = t('btnAddZone');
+                tempNoFlyZoneCorner1 = null;
+            }
+        }
+
+        function promptForNoFlyZoneDetails(corner1, corner2) {
+            const south_lat = Math.min(corner1.lat, corner2.lat);
+            const north_lat = Math.max(corner1.lat, corner2.lat);
+            const west_lng = Math.min(corner1.lon, corner2.lon);
+            const east_lng = Math.max(corner1.lon, corner2.lon);
+
+            const name = prompt(t('promptZoneName'), 'Custom Zone ' + (userNoFlyZones.length + 1));
+            if (!name) return;
+
+            const minAlt = parseInt(prompt(t('promptMinAlt'), '0'));
+            const maxAlt = parseInt(prompt(t('promptMaxAlt'), '300'));
+
+            if (isNaN(minAlt) || isNaN(maxAlt)) {
+                showToast(t('toastInvalidAlt'));
+                return;
+            }
+
+            const newZone = {
+                name,
+                type: 'restricted',
+                south_lat,
+                north_lat,
+                west_lng,
+                east_lng,
+                min_altitude: minAlt,
+                max_altitude: maxAlt
+            };
+
+            userNoFlyZones.push(newZone);
+            renderNoFlyZones();
+            showToast(t('toastZoneAdded'));
+        }
+
+        function deleteNoFlyZone(index) {
+            const zone = userNoFlyZones[index];
+            const zoneName = zone.nameKey ? t(zone.nameKey) : zone.name;
+            if (confirm(`${t('confirmDeleteZone')} "${zoneName}"?`)) {
+                userNoFlyZones.splice(index, 1);
+                renderNoFlyZones();
+                showToast(t('toastZoneDeleted'));
+            }
+        }
+
+        /**
+         * 规划起飞路径 (Following big project: flightPathPlanner.js 583-615)
+         * 从地面爬升到巡航高度，有坡度
+         */
+        function planTakeoffPath(start, cruiseAltitude, nextPoint) {
+            const waypoints = [];
+
+            // 飞行参数（参考大项目 line 96-97）
+            const takeoffAngle = 45; // 起飞角度（度）
+            const steps = 10; // 路径点数量
+
+            // 计算起飞距离（参考大项目 line 588-589）
+            const climbAngleRad = (takeoffAngle * Math.PI) / 180;
+            const horizontalDistance = cruiseAltitude / Math.tan(climbAngleRad);
+
+            // 计算朝向下一个航点的方向
+            const bearing = calculateBearing(start.lat, start.lng, nextPoint.lat, nextPoint.lng);
+
+            // 转换为经纬度偏移（参考大项目 line 591-593）
+            const latOffset = (horizontalDistance / 111000) * Math.cos(bearing);
+            const lngOffset = (horizontalDistance / 111000) * Math.sin(bearing);
+
+            // 生成起飞路径点（参考大项目 line 596-612）
+            for (let i = 0; i <= steps; i++) {
+                const ratio = i / steps;
+                waypoints.push({
+                    lat: start.lat + latOffset * ratio,
+                    lng: start.lng + lngOffset * ratio,
+                    altitude: cruiseAltitude * ratio
+                });
+            }
+
+            console.log(`[Takeoff] Angle: ${takeoffAngle}°, Horizontal distance: ${horizontalDistance.toFixed(1)}m, Points: ${waypoints.length}`);
+            return waypoints;
+        }
+
+        /**
+         * 规划降落路径 (Following big project: flightPathPlanner.js 782-814)
+         * 从巡航高度下降到地面，有坡度
+         * 反向计算：从终点往回推，确保最终降落点正好在终点标记位置
+         */
+        function planLandingPath(cruiseEnd, finalEnd, cruiseAltitude) {
+            const waypoints = [];
+
+            // 飞行参数（参考大项目 line 97, 99）
+            const landingAngle = 30; // 降落角度（度），比起飞更缓
+            const steps = 10; // 路径点数量
+
+            // 计算降落距离（参考大项目 line 787-788）
+            const descentAngleRad = (landingAngle * Math.PI) / 180;
+            const horizontalDistance = cruiseAltitude / Math.tan(descentAngleRad);
+
+            // 计算从最后巡航点到终点的方向
+            const bearing = calculateBearing(cruiseEnd.lat, cruiseEnd.lng, finalEnd.lat, finalEnd.lng);
+
+            // 反向计算：从终点往回推，计算降落起始点
+            // 转换为经纬度偏移（往回退）
+            const latOffset = -(horizontalDistance / 111000) * Math.cos(bearing);
+            const lngOffset = -(horizontalDistance / 111000) * Math.sin(bearing);
+
+            // 降落起始点（在巡航高度）
+            const landingStartLat = finalEnd.lat + latOffset;
+            const landingStartLng = finalEnd.lng + lngOffset;
+
+            // 生成降落路径点：从降落起始点（巡航高度）到终点（地面）
+            for (let i = 0; i <= steps; i++) {
+                const ratio = i / steps;
+                waypoints.push({
+                    lat: landingStartLat + (finalEnd.lat - landingStartLat) * ratio,
+                    lng: landingStartLng + (finalEnd.lng - landingStartLng) * ratio,
+                    altitude: cruiseAltitude * (1 - ratio)  // 从巡航高度降到地面
+                });
+            }
+
+            console.log(`[Landing] Angle: ${landingAngle}°, Horizontal distance: ${horizontalDistance.toFixed(1)}m, Points: ${waypoints.length}`);
+            console.log(`[Landing] Start: (${landingStartLat.toFixed(6)}, ${landingStartLng.toFixed(6)}) at ${cruiseAltitude}m`);
+            console.log(`[Landing] End: (${finalEnd.lat.toFixed(6)}, ${finalEnd.lng.toFixed(6)}) at 0m (should match endpoint marker)`);
+            return waypoints;
+        }
+
+        /**
+         * 计算两点间的方位角（弧度）
+         */
+        function calculateBearing(lat1, lon1, lat2, lon2) {
+            const lat1Rad = lat1 * Math.PI / 180;
+            const lat2Rad = lat2 * Math.PI / 180;
+            const deltaLon = (lon2 - lon1) * Math.PI / 180;
+
+            const y = Math.sin(deltaLon) * Math.cos(lat2Rad);
+            const x = Math.cos(lat1Rad) * Math.sin(lat2Rad) -
+                      Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(deltaLon);
+            const bearing = Math.atan2(y, x);
+
+            return bearing;
+        }
+
+        function addMarker(position, color, type) {
+            const label = currentLang === 'en' ? (type === 'start' ? 'Start' : 'End') : (type === 'start' ? '起点' : '终点');
+            const marker = viewer.entities.add({
+                position: position,
+                point: {
+                    pixelSize: 10,
+                    color: color,
+                    outlineColor: Cesium.Color.WHITE,
+                    outlineWidth: 2
+                },
+                label: {
+                    text: label,
+                    font: '11pt sans-serif',
+                    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                    fillColor: Cesium.Color.WHITE,
+                    outlineColor: Cesium.Color.BLACK,
+                    outlineWidth: 1.5,
+                    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                    pixelOffset: new Cesium.Cartesian2(0, -20)
+                }
+            });
+            if (type === 'start') startMarker = marker;
+            else endMarker = marker;
+        }
+
+        async function planPath() {
+            if (!startPoint || !endPoint) return;
+            const planBtn = document.getElementById('planBtn');
+            const originalHTML = planBtn.innerHTML; // Save original button content
+            planBtn.innerHTML = '<span class="spinner"></span> ' + t('toastPlanning');
+            planBtn.disabled = true;
+
+            try {
+                const altitude = parseInt(document.getElementById('altitude').value);
+                const planner = new AStar3DPathPlanner({ gridResolution: 100 });
+                planner.setNoFlyZones(userNoFlyZones); // Use user-defined zones
+
+                // Plan cruise phase at cruise altitude (A* pathfinding)
+                const result = planner.planPath(
+                    { lat: startPoint.lat, lng: startPoint.lon, altitude: altitude },
+                    { lat: endPoint.lat, lng: endPoint.lon, altitude: altitude },
+                    { cruiseAltitude: altitude, smoothPath: true }
+                );
+
+                if (result.success) {
+                    const cruisePath = result.path;
+
+                    // Phase 1: Takeoff - ground to cruise altitude with calculated slope
+                    const takeoffPath = planTakeoffPath(
+                        { lat: startPoint.lat, lng: startPoint.lon, altitude: 0 },  // Start on ground (convert lon->lng)
+                        altitude,
+                        cruisePath[0]  // Aim toward first cruise waypoint
+                    );
+
+                    // Phase 2: Cruise - A* pathfinding at altitude (already calculated)
+                    // cruisePath is the middle phase
+
+                    // Phase 3: Landing - cruise altitude to ground with calculated slope
+                    const landingPath = planLandingPath(
+                        cruisePath[cruisePath.length - 1],  // From last cruise waypoint
+                        { lat: endPoint.lat, lng: endPoint.lon, altitude: 0 },  // End on ground (convert lon->lng)
+                        altitude
+                    );
+
+                    // Combine all three phases into complete flight path
+                    const fullPath = [...takeoffPath, ...cruisePath, ...landingPath];
+
+                    console.log(`[3D Path] Takeoff: ${takeoffPath.length} waypoints, Cruise: ${cruisePath.length} waypoints, Landing: ${landingPath.length} waypoints`);
+                    console.log(`[3D Path] Total path: ${fullPath.length} waypoints`);
+
+                    flightPath = fullPath;
+                    renderPath(fullPath);
+                    updateStats(result.statistics);
+                    showToast(t('toastSuccess'));
+                    document.getElementById('flyBtn').disabled = false;
+                } else {
+                    showToast(t('toastFailed'));
+                }
+            } catch (error) {
+                console.error('Path planning error:', error);
+                showToast(t('toastFailed') + ': ' + error.message);
+            } finally {
+                planBtn.innerHTML = originalHTML; // Restore original button content
+                planBtn.disabled = false;
+            }
+        }
+
+        function renderPath(path) {
+            // Clear previous path and vertical lines
+            if (pathEntity) viewer.entities.remove(pathEntity);
+            pathVerticalLines.forEach(line => viewer.entities.remove(line));
+            pathVerticalLines = [];
+
+            // Debug: Check path altitudes
+            console.log(`[3D Path] Total waypoints: ${path.length}`);
+            console.log(`[3D Path] Sample altitudes:`, path.slice(0, 5).map(p => `${p.altitude.toFixed(1)}m`));
+
+            const positions = path.map(p => Cesium.Cartesian3.fromDegrees(p.lng, p.lat, p.altitude));
+
+            // Main 3D path line (following big project parameters)
+            pathEntity = viewer.entities.add({
+                polyline: {
+                    positions: positions,
+                    width: 8,  // Following big project: width 8
+                    material: new Cesium.PolylineGlowMaterialProperty({
+                        glowPower: 0.2,  // Following big project: glowPower 0.2
+                        taperPower: 0.5,
+                        color: Cesium.Color.CYAN.withAlpha(0.9)  // Following big project: with alpha
+                    }),
+                    clampToGround: false,  // Don't clamp to ground - show 3D path
+                    arcType: Cesium.ArcType.NONE  // Straight lines, not geodesic
+                }
+            });
+
+            // Add vertical lines from ground to path for better 3D visualization
+            // Sample every 3rd point for more vertical lines
+            path.forEach((point, index) => {
+                if (index % 3 === 0 || index === 0 || index === path.length - 1) {
+                    const verticalLine = viewer.entities.add({
+                        polyline: {
+                            positions: [
+                                Cesium.Cartesian3.fromDegrees(point.lng, point.lat, 0),
+                                Cesium.Cartesian3.fromDegrees(point.lng, point.lat, point.altitude)
+                            ],
+                            width: 2,  // Thicker vertical lines
+                            material: Cesium.Color.CYAN.withAlpha(0.4),  // More visible
+                            clampToGround: false
+                        }
+                    });
+                    pathVerticalLines.push(verticalLine);
+                }
+            });
+
+            // Fly to path with better view
+            viewer.flyTo(pathEntity, {
+                offset: new Cesium.HeadingPitchRange(
+                    0,
+                    Cesium.Math.toRadians(-45),  // Look down 45 degrees
+                    2000  // Distance
+                )
+            });
+        }
+
+        function updateStats(stats) {
+            const unit = currentLang === 'en' ? ['km', 'min', 'm'] : ['千米', '分钟', '米'];
+            document.getElementById('statDistance').textContent = (stats.totalDistance / 1000).toFixed(2) + ' ' + unit[0];
+            document.getElementById('statWaypoints').textContent = stats.totalWaypoints;
+            document.getElementById('statTime').textContent = stats.totalTimeMinutes.toFixed(1) + ' ' + unit[1];
+            document.getElementById('statAltitude').textContent = stats.maxAltitude + ' ' + unit[2];
+            document.getElementById('statsSection').style.display = 'block';
+        }
+
+        function startFlight() {
+            if (!flightPath || flightPath.length === 0) return;
+            const start = Cesium.JulianDate.now();
+            const totalTime = 30;
+            const stop = Cesium.JulianDate.addSeconds(start, totalTime, new Cesium.JulianDate());
+
+            viewer.clock.startTime = start.clone();
+            viewer.clock.stopTime = stop.clone();
+            viewer.clock.currentTime = start.clone();
+            viewer.clock.clockRange = Cesium.ClockRange.STOP_AT_END;
+
+            const positionProperty = new Cesium.SampledPositionProperty();
+            flightPath.forEach((waypoint, index) => {
+                const time = Cesium.JulianDate.addSeconds(start, (index / flightPath.length) * totalTime, new Cesium.JulianDate());
+                const position = Cesium.Cartesian3.fromDegrees(waypoint.lng, waypoint.lat, waypoint.altitude);
+                positionProperty.addSample(time, position);
+            });
+
+            if (droneEntity) viewer.entities.remove(droneEntity);
+            droneEntity = viewer.entities.add({
+                availability: new Cesium.TimeIntervalCollection([new Cesium.TimeInterval({ start, stop })]),
+                position: positionProperty,
+                // Camera tracking: 50m behind, 30m above (following big project pattern)
+                viewFrom: new Cesium.Cartesian3(-50, 0, 30),
+                // Use billboard to display drone icon
+                billboard: {
+                    image: 'visualization/drone-icon.svg',
+                    scale: 0.5,
+                    verticalOrigin: Cesium.VerticalOrigin.CENTER,
+                    horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+                    rotation: 0,
+                    alignedAxis: Cesium.Cartesian3.UNIT_Z
+                },
+                path: {
+                    resolution: 1,
+                    material: new Cesium.PolylineGlowMaterialProperty({
+                        glowPower: 0.3,
+                        color: Cesium.Color.ORANGE.withAlpha(0.7)
+                    }),
+                    width: 6,
+                    leadTime: 0,
+                    trailTime: 5  // Increased from 3 to 5 seconds (following big project)
+                }
+            });
+
+            // Enable camera tracking (following big project pattern)
+            viewer.trackedEntity = droneEntity;
+
+            // Show camera mode controls during flight
+            document.getElementById('cameraControls').classList.add('show');
+            currentCameraMode = 'follow';
+            document.getElementById('btn-camera-follow').classList.add('active');
+            document.getElementById('btn-camera-overview').classList.remove('active');
+            document.getElementById('btn-camera-free').classList.remove('active');
+
+            viewer.clock.shouldAnimate = true;
+            showToast(t('toastFlightStart'));
+        }
+
+        function clearAll() {
+            startPoint = null; endPoint = null; flightPath = null;
+            document.getElementById('startPoint').value = '';
+            document.getElementById('endPoint').value = '';
+            document.getElementById('statsSection').style.display = 'none';
+            if (startMarker) viewer.entities.remove(startMarker);
+            if (endMarker) viewer.entities.remove(endMarker);
+            if (pathEntity) viewer.entities.remove(pathEntity);
+            if (droneEntity) viewer.entities.remove(droneEntity);
+            // Clear vertical lines
+            pathVerticalLines.forEach(line => viewer.entities.remove(line));
+            pathVerticalLines = [];
+            startMarker = null; endMarker = null; pathEntity = null; droneEntity = null;
+            // Hide camera controls when not flying
+            document.getElementById('cameraControls').classList.remove('show');
+            updateButtons();
+            showToast(t('toastCleared'));
+        }
+
+        function updateButtons() {
+            document.getElementById('planBtn').disabled = !(startPoint && endPoint);
+        }
+
+        function zoomIn() {
+            const camera = viewer.camera;
+            camera.zoomIn(camera.positionCartographic.height * 0.5);
+        }
+
+        function zoomOut() {
+            const camera = viewer.camera;
+            camera.zoomOut(camera.positionCartographic.height * 0.5);
+        }
+
+        let currentCameraMode = 'follow';
+
+        function setCameraMode(mode) {
+            if (!droneEntity || !pathEntity) return;
+
+            currentCameraMode = mode;
+
+            // Update button active states
+            document.getElementById('btn-camera-follow').classList.toggle('active', mode === 'follow');
+            document.getElementById('btn-camera-overview').classList.toggle('active', mode === 'overview');
+            document.getElementById('btn-camera-free').classList.toggle('active', mode === 'free');
+
+            switch (mode) {
+                case 'follow':
+                    // Third-person follow mode (following big project pattern)
+                    viewer.trackedEntity = droneEntity;
+                    showToast(currentLang === 'en' ? '📹 Third-person view' : '📹 第三人称视角');
+                    break;
+
+                case 'overview':
+                    // Overview "god's eye" mode (following big project pattern)
+                    viewer.trackedEntity = undefined;
+                    if (pathEntity) {
+                        viewer.flyTo(pathEntity, {
+                            duration: 2,
+                            offset: new Cesium.HeadingPitchRange(
+                                0,
+                                Cesium.Math.toRadians(-60),  // 60 degrees down
+                                flightPath ? flightPath.length * 10 : 2000  // Distance based on path length
+                            )
+                        });
+                    }
+                    showToast(currentLang === 'en' ? '🌍 God\'s eye view' : '🌍 俯瞰视角');
+                    break;
+
+                case 'free':
+                    // Free camera mode (following big project pattern)
+                    viewer.trackedEntity = undefined;
+                    showToast(currentLang === 'en' ? '🖱️ Free view' : '🖱️ 自由视角');
+                    break;
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        window.onload = initCesium;
+    </script>
+</body>
+</html>

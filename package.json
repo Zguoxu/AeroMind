@@ -1,0 +1,62 @@
+{
+  "name": "aeromind",
+  "version": "1.0.0",
+  "description": "AeroMind — An AI-driven 3D A* path planning framework for UAVs with no-fly zone avoidance and real-time 3D visualization | 面向无人机的AI三维A*路径规划框架，支持禁飞区规避与三维可视化",
+  "main": "src/AStar3DPathPlanner.js",
+  "scripts": {
+    "demo": "node examples/1-quick-start/hello-world.js",
+    "example:hello": "node examples/1-quick-start/hello-world.js",
+    "example:basic": "node examples/2-basic/basic-path-planning.js",
+    "example:advanced": "node examples/3-advanced/performance-comparison.js",
+    "serve": "npx http-server -p 8080 -o visualization/standalone.html",
+    "test": "echo \"No tests configured yet\" && exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zguoxu/AeroMind.git"
+  },
+  "keywords": [
+    "aeromind",
+    "ai-driven",
+    "uav",
+    "drone",
+    "path-planning",
+    "a-star",
+    "astar",
+    "3d",
+    "pathfinding",
+    "flight-planning",
+    "cesium",
+    "visualization",
+    "no-fly-zone",
+    "obstacle-avoidance",
+    "route-planning",
+    "aerial-robotics",
+    "autonomous-flight",
+    "motion-planning",
+    "robotics",
+    "无人机",
+    "路径规划",
+    "寻路算法",
+    "人工智能"
+  ],
+  "author": "Zguoxu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Zguoxu/AeroMind/issues"
+  },
+  "homepage": "https://zguoxu.github.io/AeroMind/",
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "files": [
+    "src/",
+    "examples/",
+    "docs/",
+    "visualization/",
+    "README.md",
+    "LICENSE"
+  ]
+}
