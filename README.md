@@ -104,9 +104,9 @@ Or simply double-click `start-demo.bat` file in File Explorer.
 
 **macOS/Linux:**
 ```bash
-./start-demo.sh
+bash start-demo.sh
 ```
-Or simply double-click `start-demo.sh` file in Finder/File Manager.
+Or simply double-click `start-demo.sh` file in Finder/File Manager (if executable permission is set).
 
 **What happens:**
 - ✅ Automatically starts local HTTP server (Python or Node.js)
@@ -478,9 +478,9 @@ start start-demo.bat
 
 **macOS/Linux:**
 ```bash
-./start-demo.sh
+bash start-demo.sh
 ```
-或者直接在 Finder/文件管理器中双击 `start-demo.sh` 文件。
+或者直接在 Finder/文件管理器中双击 `start-demo.sh` 文件（需要设置可执行权限）。
 
 **会发生什么：**
 - ✅ 自动启动本地 HTTP 服务器（Python 或 Node.js）
