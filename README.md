@@ -335,19 +335,47 @@ Sets no-fly zones for obstacle avoidance.
 
 ```
 AeroMind/
-├── visualization/              # 🎬 Interactive demos
-│   └── standalone.html         # Single-file demo (just open it!)
-├── examples/                   # 📚 Usage examples
-│   ├── 1-quick-start/          # Beginner-friendly
-│   ├── 2-basic/                # Complete features
-│   ├── 3-advanced/             # Performance tuning
-│   └── 4-integration/          # Integration guides
 ├── src/
-│   └── AStar3DPathPlanner.js   # Core algorithm (548 lines)
-├── docs/
-│   ├── ALGORITHM.md            # Algorithm explanation
-│   └── QUICK_START.md          # Quick start guide
-└── README.md
+│   └── AStar3DPathPlanner.js   # Core 3D A* pathfinding algorithm (548 lines, zero dependencies)
+│
+├── visualization/              # 🎬 3D visualization demos
+│   ├── standalone.html         # Full-featured Cesium.js demo (use via start-demo scripts)
+│   └── drone-icon.svg          # UAV icon for visualization
+│
+├── examples/                   # 📚 Usage examples & tutorials
+│   ├── README.md               # Examples overview
+│   ├── 1-quick-start/
+│   │   ├── hello-world.js      # 10-line getting started example
+│   │   └── README.md           # Quick start guide
+│   ├── 2-basic/
+│   │   └── basic-path-planning.js  # Complete features demo
+│   ├── 3-advanced/
+│   │   └── performance-comparison.js  # Performance benchmarking
+│   └── 4-integration/
+│       └── cesium-integration.js  # Cesium.js integration guide
+│
+├── docs/                       # 📖 Documentation
+│   ├── index.html              # GitHub Pages entry point
+│   ├── QUICK_START.md          # Detailed quick start guide
+│   ├── ALGORITHM.md            # A* algorithm explanation
+│   └── images/                 # Documentation images
+│
+├── .github/
+│   ├── workflows/
+│   │   └── pages.yml           # GitHub Pages deployment workflow
+│   └── release-assets/
+│       └── demo.gif            # 3D demo animation (94MB)
+│
+├── start-demo.bat              # Windows demo launcher (auto-starts HTTP server)
+├── start-demo.sh               # macOS/Linux demo launcher
+├── index.html                  # Root HTML for GitHub Pages
+├── favicon.svg                 # Site favicon
+├── .nojekyll                   # GitHub Pages config
+├── package.json                # Project metadata
+├── LICENSE                     # MIT License
+├── README.md                   # This file
+├── CONTRIBUTING.md             # Contribution guidelines
+└── .gitignore                  # Git ignore rules
 ```
 
 ### 🤝 Contributing
@@ -681,19 +709,47 @@ new AStar3DPathPlanner({
 
 ```
 AeroMind/
-├── visualization/              # 🎬 交互式演示
-│   └── standalone.html         # 单文件演示（直接打开！）
-├── examples/                   # 📚 使用示例
-│   ├── 1-quick-start/          # 新手友好
-│   ├── 2-basic/                # 完整功能
-│   ├── 3-advanced/             # 性能优化
-│   └── 4-integration/          # 集成指南
 ├── src/
-│   └── AStar3DPathPlanner.js   # 核心算法（548行）
-├── docs/
-│   ├── ALGORITHM.md            # 算法详解
-│   └── QUICK_START.md          # 快速开始指南
-└── README.md
+│   └── AStar3DPathPlanner.js   # 核心 3D A* 路径规划算法（548行，零依赖）
+│
+├── visualization/              # 🎬 3D 可视化演示
+│   ├── standalone.html         # 功能完整的 Cesium.js 演示（需通过 start-demo 脚本运行）
+│   └── drone-icon.svg          # 无人机图标
+│
+├── examples/                   # 📚 使用示例与教程
+│   ├── README.md               # 示例总览
+│   ├── 1-quick-start/
+│   │   ├── hello-world.js      # 10行代码入门示例
+│   │   └── README.md           # 快速开始指南
+│   ├── 2-basic/
+│   │   └── basic-path-planning.js  # 完整功能演示
+│   ├── 3-advanced/
+│   │   └── performance-comparison.js  # 性能基准测试
+│   └── 4-integration/
+│       └── cesium-integration.js  # Cesium.js 集成指南
+│
+├── docs/                       # 📖 文档
+│   ├── index.html              # GitHub Pages 入口页面
+│   ├── QUICK_START.md          # 详细快速开始指南
+│   ├── ALGORITHM.md            # A* 算法详解
+│   └── images/                 # 文档图片
+│
+├── .github/
+│   ├── workflows/
+│   │   └── pages.yml           # GitHub Pages 自动部署配置
+│   └── release-assets/
+│       └── demo.gif            # 3D 演示动画（94MB）
+│
+├── start-demo.bat              # Windows 演示启动器（自动启动 HTTP 服务器）
+├── start-demo.sh               # macOS/Linux 演示启动器
+├── index.html                  # GitHub Pages 根目录 HTML
+├── favicon.svg                 # 网站图标
+├── .nojekyll                   # GitHub Pages 配置
+├── package.json                # 项目元数据
+├── LICENSE                     # MIT 许可证
+├── README.md                   # 本文件
+├── CONTRIBUTING.md             # 贡献指南
+└── .gitignore                  # Git 忽略规则
 ```
 
 ### 🤝 贡献
