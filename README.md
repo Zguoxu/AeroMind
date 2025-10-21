@@ -97,16 +97,16 @@ cd AeroMind
 **Step 2: Run the demo script**
 
 **Windows:**
-```bash
-# Double-click this file, or run in terminal:
+```cmd
 start-demo.bat
 ```
+Or simply double-click `start-demo.bat` file in File Explorer.
 
 **macOS/Linux:**
 ```bash
-# Double-click this file, or run in terminal:
 ./start-demo.sh
 ```
+Or simply double-click `start-demo.sh` file in Finder/File Manager.
 
 **What happens:**
 - ✅ Automatically starts local HTTP server (Python or Node.js)
@@ -471,16 +471,16 @@ cd AeroMind
 **步骤2: 运行演示脚本**
 
 **Windows:**
-```bash
-# 双击此文件，或在终端运行：
+```cmd
 start-demo.bat
 ```
+或者直接在文件资源管理器中双击 `start-demo.bat` 文件。
 
 **macOS/Linux:**
 ```bash
-# 双击此文件，或在终端运行：
 ./start-demo.sh
 ```
+或者直接在 Finder/文件管理器中双击 `start-demo.sh` 文件。
 
 **会发生什么：**
 - ✅ 自动启动本地 HTTP 服务器（Python 或 Node.js）
