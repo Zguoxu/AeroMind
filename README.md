@@ -62,64 +62,127 @@
 </tr>
 </table>
 
-### ⚡ Quick Start (3 ways!)
+### ⚡ Quick Start | 快速开始
 
-#### Option 1: 🎬 **Try Interactive Demo** (Fastest!)
+**🎯 Choose Your Path | 选择你的方式:**
 
+---
+
+#### 🌐 Option 1: Online Demo (Fastest! No Installation Required)
+
+**Just visit the live demo - that's it!**
+
+👉 **[https://zguoxu.github.io/AeroMind/](https://zguoxu.github.io/AeroMind/)**
+
+- ✅ Works in any modern browser (Chrome, Firefox, Edge, Safari)
+- ✅ Interactive 3D visualization with Cesium.js
+- ✅ Click "Start Planning" to see the path planning in action
+- ✅ Bilingual UI (English/中文)
+- ⚡ **No clone, no install, no setup!**
+
+**Perfect for:** Quick preview, sharing demos, mobile devices
+
+---
+
+#### 💻 Option 2: Run Local Demo (For Development)
+
+**Clone the repository and run the 3D visualization locally:**
+
+**Step 1: Clone the repository**
 ```bash
-# Clone the repository - no installation needed!
 git clone https://github.com/Zguoxu/AeroMind.git
 cd AeroMind
 ```
 
-**Two ways to run the demo:**
+**Step 2: Run the demo script**
 
-**Method 1: 🌐 Online Demo (Easiest - No Installation)**
-- Visit: **[https://zguoxu.github.io/AeroMind/](https://zguoxu.github.io/AeroMind/)**
-- ✅ Works perfectly in any browser
-- ✅ No setup required
-
-**Method 2: 💻 Local Server (For Development)**
+**Windows:**
 ```bash
-# Windows - just double-click:
+# Double-click this file, or run in terminal:
 start-demo.bat
-
-# macOS/Linux - just double-click:
-start-demo.sh
 ```
-- ✅ Automatically starts HTTP server and opens browser
-- ✅ No CORS errors
-- ⚙️ Required for local development
 
-**⚠️ Important**: Do NOT directly open `visualization/standalone.html` in your browser. Due to Cesium's Web Workers, all modern browsers (Chrome, Edge, Firefox) will block it with CORS errors when opened from the file system. Always use one of the two methods above.
-
-#### Option 2: 🚀 **Run Command-line Example**
-
+**macOS/Linux:**
 ```bash
-# Run the hello-world example
+# Double-click this file, or run in terminal:
+./start-demo.sh
+```
+
+**What happens:**
+- ✅ Automatically starts local HTTP server (Python or Node.js)
+- ✅ Opens browser at `http://localhost:8000/visualization/standalone.html`
+- ✅ Full 3D Cesium visualization with no CORS errors
+- ✅ Edit code and refresh to see changes
+
+**Perfect for:** Local development, customization, offline use
+
+**⚠️ Important:** Do NOT directly open `visualization/standalone.html` by double-clicking. Modern browsers block Cesium's Web Workers when opened from `file://` protocol. Always use the demo scripts.
+
+---
+
+#### 🚀 Option 3: Run Command-Line Example
+
+**See path planning results in your terminal:**
+
+**Step 1: Clone the repository (if not already done)**
+```bash
+git clone https://github.com/Zguoxu/AeroMind.git
+cd AeroMind
+```
+
+**Step 2: Run the hello-world example**
+```bash
 node examples/1-quick-start/hello-world.js
 ```
 
-**Output:**
+**Expected Output:**
 ```
-✅ Path Planning Successful!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚁 AeroMind - Hello World Example
+   3D A* Path Planning for UAVs
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📊 Flight Statistics:
-   • Total Waypoints: 52
-   • Total Distance: 4.61 km
-   • Estimated Time: 5.1 minutes
-   • Max Altitude: 120 m
+📍 Start Point | 起点: Lat 41.748, Lng 123.362, Alt 100m
+📍 End Point | 终点: Lat 41.733, Lng 123.413, Alt 120m
+
+⏳ Planning path... | 正在规划路径...
+
+✅ Path Planning Successful! | 路径规划成功！
+
+📊 Flight Statistics | 飞行统计:
+   • Total Waypoints | 总航点数: 52
+   • Total Distance | 总距离: 4.61 km
+   • Estimated Time | 预计时长: 5.1 min
+   • Max Altitude | 最高高度: 120 m
 ```
 
-#### Option 3: 💻 **Use as Library**
+**Perfect for:** Understanding the algorithm, testing parameters, CI/CD integration
 
+**Prerequisites:** Node.js >= 12.0.0
+
+---
+
+#### 📦 Option 4: Use as Library in Your Project
+
+**Integrate AeroMind into your own application:**
+
+**Step 1: Add to your project**
+```bash
+# Copy the core algorithm file to your project
+cp path/to/AeroMind/src/AStar3DPathPlanner.js your-project/lib/
+```
+
+**Step 2: Use in your code**
 ```javascript
-const AStar3DPathPlanner = require('./src/AStar3DPathPlanner')
+const AStar3DPathPlanner = require('./lib/AStar3DPathPlanner')
 
-// 1. Create planner
-const planner = new AStar3DPathPlanner({ gridResolution: 100 })
+// 1. Create planner instance
+const planner = new AStar3DPathPlanner({
+  gridResolution: 100,   // Grid size in meters
+  maxIterations: 50000   // Max search iterations
+})
 
-// 2. Set no-fly zones
+// 2. Define no-fly zones (optional)
 planner.setNoFlyZones([
   {
     name: 'Airport Restricted Zone',
@@ -129,17 +192,31 @@ planner.setNoFlyZones([
   }
 ])
 
-// 3. Plan path (one line!)
+// 3. Plan the path - just one line!
 const result = planner.planPath(
-  { lat: 41.748, lng: 123.362, altitude: 100 },
-  { lat: 41.733, lng: 123.413, altitude: 120 }
+  { lat: 41.748, lng: 123.362, altitude: 100 },  // Start
+  { lat: 41.733, lng: 123.413, altitude: 120 }   // End
 )
 
+// 4. Use the results
 if (result.success) {
+  console.log('✅ Path found!')
   console.log('Distance:', result.statistics.totalDistance, 'm')
   console.log('Waypoints:', result.path.length)
+  console.log('Flight time:', result.statistics.totalTimeMinutes, 'min')
+
+  // Access the path
+  result.path.forEach((waypoint, index) => {
+    console.log(`${index}: (${waypoint.lat}, ${waypoint.lng}, ${waypoint.altitude}m)`)
+  })
+} else {
+  console.error('❌ Path planning failed:', result.message)
 }
 ```
+
+**Perfect for:** Production applications, custom integrations, research projects
+
+**Zero dependencies!** The core algorithm is pure JavaScript.
 
 ### 📖 Examples
 
@@ -331,64 +408,127 @@ If you find this project helpful, please give it a ⭐ star on GitHub!
 </tr>
 </table>
 
-### ⚡ 快速开始（3种方式！）
+### ⚡ 快速开始 | Quick Start
 
-#### 方式1: 🎬 **体验交互式演示**（最快！）
+**🎯 选择你的方式 | Choose Your Path:**
 
+---
+
+#### 🌐 方式1: 在线演示（最快！无需安装）
+
+**直接访问在线演示 - 就是这么简单！**
+
+👉 **[https://zguoxu.github.io/AeroMind/](https://zguoxu.github.io/AeroMind/)**
+
+- ✅ 在任何现代浏览器中都能使用（Chrome、Firefox、Edge、Safari）
+- ✅ 交互式 3D Cesium.js 可视化
+- ✅ 点击 "Start Planning" 按钮即可看到路径规划演示
+- ✅ 中英双语界面
+- ⚡ **无需克隆、无需安装、无需配置！**
+
+**适合场景：** 快速预览、分享演示、移动设备访问
+
+---
+
+#### 💻 方式2: 本地运行演示（用于开发）
+
+**克隆仓库并在本地运行 3D 可视化：**
+
+**步骤1: 克隆仓库**
 ```bash
-# 克隆仓库 - 无需安装任何东西！
 git clone https://github.com/Zguoxu/AeroMind.git
 cd AeroMind
 ```
 
-**两种运行演示的方式：**
+**步骤2: 运行演示脚本**
 
-**方式1: 🌐 在线演示（最简单 - 无需安装）**
-- 访问：**[https://zguoxu.github.io/AeroMind/](https://zguoxu.github.io/AeroMind/)**
-- ✅ 在任何浏览器中完美运行
-- ✅ 无需任何设置
-
-**方式2: 💻 本地服务器（用于开发）**
+**Windows:**
 ```bash
-# Windows - 直接双击：
+# 双击此文件，或在终端运行：
 start-demo.bat
-
-# macOS/Linux - 直接双击：
-start-demo.sh
 ```
-- ✅ 自动启动HTTP服务器并打开浏览器
-- ✅ 无CORS错误
-- ⚙️ 本地开发必须使用此方式
 
-**⚠️ 重要提示**：请勿直接在浏览器中打开 `visualization/standalone.html`。由于Cesium使用了Web Workers，所有现代浏览器（Chrome、Edge、Firefox）都会在从文件系统打开时阻止并显示CORS错误。请始终使用上述两种方法之一。
-
-#### 方式2: 🚀 **运行命令行示例**
-
+**macOS/Linux:**
 ```bash
-# 运行 hello-world 示例
+# 双击此文件，或在终端运行：
+./start-demo.sh
+```
+
+**会发生什么：**
+- ✅ 自动启动本地 HTTP 服务器（Python 或 Node.js）
+- ✅ 在浏览器中打开 `http://localhost:8000/visualization/standalone.html`
+- ✅ 完整的 3D Cesium 可视化，无 CORS 错误
+- ✅ 编辑代码后刷新即可看到更改
+
+**适合场景：** 本地开发、自定义修改、离线使用
+
+**⚠️ 重要提示：** 请勿通过双击直接打开 `visualization/standalone.html`。现代浏览器会阻止通过 `file://` 协议打开的 Cesium Web Workers。请始终使用演示脚本。
+
+---
+
+#### 🚀 方式3: 运行命令行示例
+
+**在终端中查看路径规划结果：**
+
+**步骤1: 克隆仓库（如果还没有的话）**
+```bash
+git clone https://github.com/Zguoxu/AeroMind.git
+cd AeroMind
+```
+
+**步骤2: 运行 hello-world 示例**
+```bash
 node examples/1-quick-start/hello-world.js
 ```
 
-**输出：**
+**预期输出：**
 ```
-✅ 路径规划成功！
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚁 AeroMind - Hello World Example
+   3D A* Path Planning for UAVs
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📊 飞行统计:
-   • 总航点数: 52
-   • 总距离: 4.61 km
-   • 预计时长: 5.1 分钟
-   • 最高高度: 120 m
+📍 Start Point | 起点: Lat 41.748, Lng 123.362, Alt 100m
+📍 End Point | 终点: Lat 41.733, Lng 123.413, Alt 120m
+
+⏳ Planning path... | 正在规划路径...
+
+✅ Path Planning Successful! | 路径规划成功！
+
+📊 Flight Statistics | 飞行统计:
+   • Total Waypoints | 总航点数: 52
+   • Total Distance | 总距离: 4.61 km
+   • Estimated Time | 预计时长: 5.1 min
+   • Max Altitude | 最高高度: 120 m
 ```
 
-#### 方式3: 💻 **用作库集成**
+**适合场景：** 理解算法、测试参数、CI/CD 集成
 
+**前置要求：** Node.js >= 12.0.0
+
+---
+
+#### 📦 方式4: 在你的项目中集成使用
+
+**将 AeroMind 集成到你自己的应用中：**
+
+**步骤1: 添加到你的项目**
+```bash
+# 复制核心算法文件到你的项目
+cp path/to/AeroMind/src/AStar3DPathPlanner.js your-project/lib/
+```
+
+**步骤2: 在代码中使用**
 ```javascript
-const AStar3DPathPlanner = require('./src/AStar3DPathPlanner')
+const AStar3DPathPlanner = require('./lib/AStar3DPathPlanner')
 
-// 1. 创建规划器
-const planner = new AStar3DPathPlanner({ gridResolution: 100 })
+// 1. 创建路径规划器实例
+const planner = new AStar3DPathPlanner({
+  gridResolution: 100,   // 网格大小（米）
+  maxIterations: 50000   // 最大搜索迭代次数
+})
 
-// 2. 设置禁飞区
+// 2. 定义禁飞区（可选）
 planner.setNoFlyZones([
   {
     name: '机场限制区',
@@ -398,17 +538,31 @@ planner.setNoFlyZones([
   }
 ])
 
-// 3. 规划路径（一行代码！）
+// 3. 规划路径 - 只需一行代码！
 const result = planner.planPath(
-  { lat: 41.748, lng: 123.362, altitude: 100 },
-  { lat: 41.733, lng: 123.413, altitude: 120 }
+  { lat: 41.748, lng: 123.362, altitude: 100 },  // 起点
+  { lat: 41.733, lng: 123.413, altitude: 120 }   // 终点
 )
 
+// 4. 使用结果
 if (result.success) {
-  console.log('总距离:', result.statistics.totalDistance, '米')
+  console.log('✅ 找到路径！')
+  console.log('距离:', result.statistics.totalDistance, '米')
   console.log('航点数:', result.path.length)
+  console.log('飞行时长:', result.statistics.totalTimeMinutes, '分钟')
+
+  // 访问路径数据
+  result.path.forEach((waypoint, index) => {
+    console.log(`${index}: (${waypoint.lat}, ${waypoint.lng}, ${waypoint.altitude}m)`)
+  })
+} else {
+  console.error('❌ 路径规划失败:', result.message)
 }
 ```
+
+**适合场景：** 生产应用、自定义集成、研究项目
+
+**零依赖！** 核心算法是纯 JavaScript 实现。
 
 ### 📖 示例列表
 
