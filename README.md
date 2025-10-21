@@ -21,6 +21,7 @@
 
 ![3D Path Planning Demo](https://github.com/Zguoxu/AeroMind/releases/download/v1.0.0/demo.gif)
 
+
 > **Interactive Demo**: [Click here to try it online!](https://zguoxu.github.io/AeroMind/) | **在线演示**: [点击体验！](https://zguoxu.github.io/AeroMind/)
 
 **3D A\* pathfinding with no-fly zone avoidance** | **3D A\*寻路算法 + 禁飞区智能规避**
