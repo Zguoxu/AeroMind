@@ -98,7 +98,7 @@ cd AeroMind
 
 **Windows:**
 ```cmd
-start-demo.bat
+start start-demo.bat
 ```
 Or simply double-click `start-demo.bat` file in File Explorer.
 
@@ -472,7 +472,7 @@ cd AeroMind
 
 **Windows:**
 ```cmd
-start-demo.bat
+start start-demo.bat
 ```
 或者直接在文件资源管理器中双击 `start-demo.bat` 文件。
 
